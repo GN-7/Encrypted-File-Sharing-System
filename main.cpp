@@ -1,5 +1,7 @@
 #include <iostream>
 #include <fstream>
+#include <istream>
+#include <sstream>
 #include <string>
 #include <queue>
 #include <vector>
@@ -11,8 +13,29 @@ protected:
     vector<string> fileDirectory;
     vector<string> downloadQueue;
 
-    void readFile(){}
-    void validateFileName(){}
+    void registerFileName(string fp){
+
+    }
+
+    string readFile(string filepath){
+        
+        registerFileName(filepath);
+
+        ifstream file(filepath);        
+        if (file.is_open() != true)
+        {
+            cout << "File reading unsuccesful";
+        }
+
+        ostringstream buffer;
+        buffer << file.rdbuf();
+        string fileContents = buffer.str();
+
+        return fileContents;
+    }
+    void validateFileName(){
+        //Binary Search
+    }
     //void validateDownload(){}
 };
 
@@ -29,11 +52,7 @@ class Compressor : protected System {
 };
 
 int main(){
-    while (true)
-    {
-        //MENU
-        
-    }
+    
     
     return 0;
 }
