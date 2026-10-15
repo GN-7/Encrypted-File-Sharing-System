@@ -12,9 +12,11 @@ class System
 {
 protected:
     vector<string> fileDirectory;
+    vector<string> uploadQueue;
     vector<string> downloadQueue;
 
-    void registerFileName(string fp){
+    void registerFileName(string fp){//Adds filename into the directory
+        
         stack<char> filename;
         string fn;
         for (int i = fp.size(); i > 0; i--)
@@ -40,7 +42,7 @@ protected:
         
     }
 
-    string readFile(string filepath){
+    string readFile(string filepath){//Reads the file into a string
         
         registerFileName(filepath);
 
@@ -56,10 +58,12 @@ protected:
 
         return fileContents;
     }
-    void validateFileName(){
-        //Binary Search
+
+    void validateFile(){//Binary Search for Filename if it exists in the Directory
     }
-    //void validateDownload(){}
+
+
+    
 };
 
 class Encryptor : protected System {
@@ -75,7 +79,7 @@ class Compressor : protected System {
 };
 
 int main(){
-    
+
     
     return 0;
 }
