@@ -42,7 +42,7 @@ protected:
         
     }
 
-    string readFile(string filepath){//Reads the file into a string
+    string readFiletoString(string filepath){//Reads the file into a string
         
         registerFileName(filepath);
 
@@ -62,6 +62,16 @@ protected:
     void validateFile(){//Binary Search for Filename if it exists in the Directory
     }
 
+    void writeStringtoFile(string str, string fp){
+        ofstream file(fp);
+                
+        if (file.is_open() != true)
+        {
+            cout << "File writing unsuccesful";
+        }
+
+        file << str;
+    }
 
     
 };
