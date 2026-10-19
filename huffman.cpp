@@ -1,173 +1,284 @@
 #include <iostream>
 #include <string>
-#include <vector>
 #include <queue>
-#include <string>
-#include <set>
 #include <unordered_map>
+#include <vector>
 using namespace std;
 
-class Node{
+class Node {
 public:
-    char data;
+    char ch;
     int freq;
-    Node* left;
-    Node* right;
+    Node *left, *right;
 
-    Node(char d,int f){
-        left = right = NULL;
-        data = d;
+    Node(char c, int f) {
+        ch = c;
         freq = f;
+        left = right = nullptr;
     }
 };
 
-class compare{
+// Min-heap comparator
+class Compare {
 public:
-    bool operator()(Node* left, Node* right) {
-        return left->freq > right->freq;
+    bool operator()(Node* a, Node* b) {
+        return a->freq > b->freq;
     }
 };
 
-// void printcodes(Node* root, string str){     // printing assigned huffman codes
-//     if(root == NULL){
-//         return;
-//     }
-//
-//     if (root->data != '\0') {
-//         cout << root->data << ": " << str <<"\n";
-//     }
-//
-//     printcodes(root->left, str + "0");
-//     printcodes(root->right, str + "1");
-// }
+class Huffman {
+    Node* root;
+    unordered_map<char, string> codes;
 
+    string storedTree;
+    vector<unsigned char> payload;
+    int originalSize = 0;
 
-void storeCodes(Node* root, string str, unordered_map<char, string>& huffmanCodes) {
-    if (root == NULL) {
-        return;
-    }
+    void generateCodes(Node* node, string code) {
+        if (!node)
+            return;
 
-    if (root->data != '\0') {
-        huffmanCodes[root->data] = str;
-        cout << root->data << ": " << str <<"\n";
-        // u can also directly print here and remove the printnode function
-    }
-
-    storeCodes(root->left, str + "0", huffmanCodes);
-    storeCodes(root->right, str + "1", huffmanCodes);
-}
-
-string decompress(Node* root, string& encoded) {
-    string decoded = "";
-
-    if(root == NULL) {
-        return decoded;
-    }
-
-    //is tree contains single character
-    if(!root->left && !root->right) {
-        return string (encoded.length(), root->data);
-    }
-
-    Node* curr = root;
-    for(char c : encoded) {
-        if(c == '0'){
-            curr = curr->left;
-        }
-        else {
-            curr = curr->right;
+        if (!node->left && !node->right) {
+            codes[node->ch] = code.empty() ? "0" : code;
+            return;
         }
 
-        if(!curr->left && !curr->right) {
-            decoded += curr->data;
-            // decoded += "`";
-            curr = root;
+        generateCodes(node->left, code + "0");
+        generateCodes(node->right, code + "1");
+    }
+
+    Node* buildTree(const string& text) {
+        unordered_map<char, int> freq;
+
+        for (char ch : text)
+            freq[ch]++;
+
+        priority_queue<Node*, vector<Node*>, Compare> pq;
+
+        for (auto& p : freq)
+            pq.push(new Node(p.first, p.second));
+
+        if (pq.empty())
+            return nullptr;
+
+        while (pq.size() > 1) {
+            Node* left = pq.top();
+            pq.pop();
+
+            Node* right = pq.top();
+            pq.pop();
+
+            Node* parent = new Node(
+                '\0', left->freq + right->freq
+            );
+
+            parent->left = left;
+            parent->right = right;
+
+            pq.push(parent);
         }
 
-        if(curr == NULL) break;
+        return pq.top();
+    }
+
+    void storeTree(Node* node) {    //preorder sequence
+        if (!node)
+            return;
+
+        if (!node->left && !node->right) {
+            storedTree += '1';
+            storedTree += node->ch;
+            return;
+        }
+
+        storedTree += '0';
+
+        storeTree(node->left);
+        storeTree(node->right);
+    }
+
+    Node* rebuildTree(int& pos) {
+        if (pos >= (int)storedTree.size())
+            return nullptr;
+
+        char marker = storedTree[pos++];
+
+        if (marker == '1') {
+            if (pos >= (int)storedTree.size())
+                return nullptr;
+
+            char ch = storedTree[pos++];
+            return new Node(ch, 0);
+        }
+
+        if (marker != '0')
+            return nullptr;
+
+        Node* node = new Node('\0', 0);
+
+        node->left = rebuildTree(pos);
+        node->right = rebuildTree(pos);
+
+        if (!node->left || !node->right)
+            return nullptr;
+
+        return node;
+    }
+
+public:
+    Huffman() : root(nullptr) {}
+
+    string compress(const string& text) {
+        codes.clear();
+        storedTree.clear();
+        payload.clear();
+
+        root = buildTree(text);
+        originalSize = text.size();
+
+        if (!root)
+            return "";
+
+        generateCodes(root, "");
+        storeTree(root);
+
+        unsigned char buffer = 0;
+        int bitCount = 0;
+
+        for (char ch : text) {
+            for (char bit : codes[ch]) {
+                buffer = (buffer << 1) | (bit == '1');
+
+                bitCount++;
+
+                if (bitCount == 8) {
+                    payload.push_back(buffer);
+                    buffer = 0;
+                    bitCount = 0;
+                }
+            }
+        }
+        // for remaing that take bits less than 8
+        if (bitCount > 0) {
+            buffer <<= (8 - bitCount);
+            payload.push_back(buffer);
+        }
+
+        return "";
+    }
+
+    string decompress() {
+        string decoded;
+
+        if (originalSize == 0)
+            return decoded;
+
+        int pos = 0;
+        Node* decodeRoot = rebuildTree(pos);
+
+        if (!decodeRoot || pos != (int)storedTree.size())
+            return "";
+
+        // if only 1 character.
+        if (!decodeRoot->left && !decodeRoot->right) {
+            for (int i = 0; i < originalSize; i++)
+                decoded += decodeRoot->ch;
+
+            return decoded;
+        }
+
+        Node* current = decodeRoot;
+
+        for (int i = 0; i < (int)payload.size(); i++) {
+            unsigned char byte = payload[i];
+
+            for (int bit = 7; bit >= 0; bit--) {
+                int value = (byte >> bit) & 1;
+
+                if (value == 0)
+                    current = current->left;
+                else
+                    current = current->right;
+
+                if (!current)
+                    return "";
+
+                if (!current->left && !current->right) {
+                    decoded += current->ch;
+                    current = decodeRoot;
+
+                    // Original size tells us when to stop,
+                    // ignoring padding bits in the final byte.
+                    if ((int)decoded.size() == originalSize)
+                        return decoded;
+                }
+            }
+        }
+
+        return "";
     }
 
 
 
-    return decoded;
-}
 
-unordered_map<char, string> huffmancodes(vector<char> data, int freq[], int size, Node* &root){
-    Node* left, *right, *top;
-    priority_queue<Node*, vector<Node*>, compare> minheap;
+    void printSizes(const string& text) {
+        int originalBytes = text.size();
+        int compressedBytes = payload.size();
 
-    for(int i=0; i< size; i++){
-        minheap.push(new Node(data[i], freq[(unsigned char)data[i]]));
+        // Include the serialized tree metadata.
+        int totalBytes = compressedBytes + storedTree.size();
+
+        cout << "Original size: "
+             << originalBytes << " bytes\n";
+
+        cout << "Compressed payload size: "
+             << compressedBytes << " bytes\n";
+
+        cout << "Stored tree size: "
+             << storedTree.size() << " bytes\n";
+
+        cout << "Total compressed size (payload + tree): "
+             << totalBytes << " bytes\n";
+
+        if (originalBytes > 0) {
+            double saved = 100.0 *
+                (originalBytes - totalBytes) / originalBytes;
+
+            cout << "Space saved: " << saved << "%\n";
+        }
     }
 
-    while(minheap.size() > 1){
-        left = minheap.top();
-        minheap.pop();
-        right = minheap.top();
-        minheap.pop();
+    // h.compress(text);
+    // h.printSizes(text);
 
-        top = new Node('\0', left->freq + right->freq);
-        top->left = left;
-        top->right = right;
-        minheap.push(top);
-    }
+    //Note: This calculates the size of the payload and serialized tree. If you later transmit the original size or other metadata separately, include those bytes too for an accurate total. A negative space-saved percentage means the compressed representation is larger than the original.
 
-    root = minheap.top();
-    // printcodes(minheap.top(), "");
+};
 
-    unordered_map<char, string> huffmanCodes;
-    storeCodes(minheap.top(), "", huffmanCodes);
-    return huffmanCodes;
-}
+int main() {
+    // string text = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco.";
+    string text = "Lorem ipsum dolor sit amet consectetur adipiscing elit. Sem placerat in id cursus mi pretium tellus. Sed diam urna tempor pulvinar vivamus fringilla lacus. Nisl malesuada lacinia integer nunc posuere ut hendrerit. Ad litora torquent per conubia nostra inceptos himenaeos. Dis parturient montes nascetur ridiculus mus donec rhoncus. Maximus eget fermentum odio phasellus non purus est. Dictum risus blandit quis suspendisse aliquet nisi sodales. Luctus nibh finibus facilisis dapibus etiam interdum tortor. Tincidunt nam porta elementum a enim euismod quam. Velit aliquam imperdiet mollis nullam volutpat porttitor ullamcorper. Primis vulputate ornare sagittis vehicula praesent dui felis. Accumsan maecenas potenti ultricies habitant morbi senectus netus. Hac habitasse platea dictumst lorem ipsum dolor sit. Ex sapien vitae pellentesque sem placerat in id. Tempus leo eu aenean sed diam urna tempor. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Class aptent taciti sociosqu ad litora torquent per. Natoque penatibus et magnis dis parturient montes nascetur. Nulla molestie mattis scelerisque maximus eget fermentum odio. Mauris pharetra vestibulum fusce dictum risus blandit quis. Ante condimentum neque at luctus nibh finibus facilisis. Sollicitudin erat viverra ac tincidunt nam porta elementum. Commodo augue arcu dignissim velit aliquam imperdiet mollis. Cras eleifend turpis fames primis vulputate ornare sagittis. Proin libero feugiat tristique accumsan maecenas potenti ultricies. Curabitur facilisi cubilia curae hac habitasse platea dictumst. Adipiscing elit quisque faucibus ex sapien vitae pellentesque. Pretium tellus duis convallis tempus leo eu aenean. Fringilla lacus nec metus bibendum egestas iaculis massa. Ut hendrerit semper vel class aptent taciti sociosqu. Inceptos himenaeos orci varius natoque penatibus et magnis. Donec rhoncus eros lobortis nulla molestie mattis scelerisque. Purus est efficitur laoreet mauris pharetra vestibulum fusce. Nisi sodales consequat magna ante condimentum neque at. Interdum tortor ligula congue sollicitudin erat viverra ac. Euismod quam justo lectus commodo augue arcu dignissim. Porttitor ullamcorper rutrum gravida cras eleifend turpis fames. Dui felis venenatis ultrices proin libero feugiat tristique. Senectus netus suscipit auctor curabitur facilisi cubilia curae. Dolor sit amet consectetur adipiscing elit quisque faucibus. In id cursus mi pretium tellus duis convallis. Urna tempor pulvinar vivamus fringilla lacus nec metus. Lacinia integer nunc posuere ut hendrerit semper vel. Torquent per conubia nostra inceptos himenaeos orci varius. Montes nascetur ridiculus mus donec rhoncus eros lobortis. Fermentum odio phasellus non purus est efficitur laoreet. Blandit quis suspendisse aliquet nisi sodales consequat magna. Finibus facilisis dapibus etiam interdum tortor ligula congue. Porta elementum a enim euismod quam justo lectus. Imperdiet mollis nullam volutpat porttitor ullamcorper rutrum gravida. Ornare sagittis vehicula praesent dui felis venenatis ultrices. Potenti ultricies habitant morbi senectus netus suscipit auctor. Platea dictumst lorem ipsum dolor sit amet consectetur. Vitae pellentesque sem placerat in id cursus mi. Eu aenean sed diam urna tempor pulvinar vivamus. Iaculis massa nisl malesuada lacinia integer nunc posuere. Taciti sociosqu ad litora torquent per conubia nostra. Et magnis dis parturient montes nascetur ridiculus mus. Mattis scelerisque maximus eget fermentum odio phasellus non. Vestibulum fusce dictum risus blandit quis suspendisse aliquet. Neque at luctus nibh finibus facilisis dapibus etiam. Viverra ac tincidunt nam porta elementum a enim. Arcu dignissim velit aliquam imperdiet mollis nullam volutpat. Turpis fames primis vulputate ornare sagittis vehicula praesent. Feugiat tristique accumsan maecenas potenti ultricies habitant morbi. Cubilia curae hac habitasse platea dictumst lorem ipsum. Quisque faucibus ex sapien vitae pellentesque sem placerat. Duis convallis tempus leo eu aenean sed diam. Nec metus bibendum egestas iaculis massa nisl malesuada. Semper vel class aptent taciti sociosqu ad litora. Orci varius natoque penatibus et magnis dis parturient. Eros lobortis nulla molestie mattis scelerisque maximus eget. Efficitur laoreet mauris pharetra vestibulum fusce dictum risus. Consequat magna ante condimentum neque at luctus nibh. Ligula congue sollicitudin erat viverra ac tincidunt nam. Justo lectus commodo augue arcu dignissim velit aliquam. Rutrum gravida cras eleifend turpis fames primis vulputate. Venenatis ultrices proin libero feugiat tristique accumsan maecenas. Suscipit auctor curabitur facilisi cubilia curae hac habitasse. Amet consectetur adipiscing elit quisque faucibus ex sapien. Cursus mi pretium tellus duis convallis tempus leo. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Nunc posuere ut hendrerit semper vel class aptent. Conubia nostra inceptos himenaeos orci varius natoque penatibus. Ridiculus mus donec rhoncus eros lobortis nulla molestie. Phasellus non purus est efficitur laoreet mauris pharetra. Suspendisse aliquet nisi sodales consequat magna ante condimentum. Dapibus etiam interdum tortor ligula congue sollicitudin erat. Aenim euismod quam justo lectus commodo augue. Nullam volutpat porttitor ullamcorper rutrum gravida cras eleifend. Vehicula praesent dui felis venenatis ultrices proin libero. Habitant morbi senectus netus suscipit auctor curabitur facilisi. Lorem ipsum dolor sit amet consectetur adipiscing elit. Sem placerat in id cursus mi pretium tellus. Sed diam urna tempor pulvinar vivamus fringilla lacus. Nisl malesuada lacinia integer nunc posuere ut hendrerit. Ad litora torquent per conubia nostra inceptos himenaeos. Dis parturient montes nascetur ridiculus mus donec rhoncus. Maximus eget fermentum odio phasellus non purus est. Dictum risus blandit quis suspendisse aliquet nisi sodales. Luctus nibh finibus facilisis dapibus etiam interdum tortor. Tincidunt nam porta elementum a enim euismod quam. Velit aliquam imperdiet mollis nullam volutpat porttitor ullamcorper. Primis vulputate ornare sagittis vehicula praesent dui felis. Accumsan maecenas potenti ultricies habitant morbi senectus netus. Hac habitasse platea dictumst lorem ipsum dolor sit. Ex sapien vitae pellentesque sem placerat in id. Tempus leo eu aenean sed diam urna tempor. Bibendum egestas iaculis massa nisl malesuada lacinia integer. Class aptent taciti sociosqu ad litora torquent per. Natoque penatibus et magnis dis parturient montes nascetur. Nulla molestie mattis scelerisque maximus eget fermentum odio. Mauris pharetra vestibulum fusce dictum risus blandit quis. Ante condimentum neque at luctus nibh finibus facilisis. Sollicitudin erat viverra ac tincidunt nam porta elementum. Commodo augue arcu dignissim velit aliquam imperdiet mollis. Cras eleifend turpis fames primis vulputate ornare sagittis. Proin libero feugiat tristique accumsan maecenas potenti ultricies. Curabitur facilisi cubilia curae hac habitasse platea dictumst. Adipiscing elit quisque faucibus ex sapien vitae pellentesque. Pretium tellus duis convallis tempus leo eu aenean. Fringilla lacus nec metus bibendum egestas iaculis massa. Ut hendrerit semper vel class aptent taciti sociosqu. Inceptos himenaeos orci varius natoque penatibus et magnis. Donec rhoncus eros lobortis nulla molestie mattis scelerisque. Purus est efficitur laoreet mauris pharetra vestibulum fusce. Nisi sodales consequat magna ante condimentum neque at. Interdum tortor ligula congue sollicitudin erat viverra ac. Euismod quam justo lectus commodo augue arcu dignissim. Porttitor ullamcorper rutrum gravida cras eleifend turpis fames. Dui felis venenatis ultrices proin libero feugiat tristique. Senectus netus suscipit auctor curabitur facilisi cubilia curae. Dolor sit amet consectetur adipiscing elit quisque faucibus. In id cursus mi pretium tellus duis convallis. Urna tempor pulvinar vivamus fringilla lacus nec metus. Lacinia integer nunc posuere ut hendrerit semper vel. Torquent per conubia nostra inceptos himenaeos orci varius. Montes nascetur ridiculus mus donec rhoncus eros lobortis. Fermentum odio phasellus non purus est efficitur laoreet. Blandit quis suspendisse aliquet nisi sodales consequat magna. Finibus facilisis dapibus etiam interdum tortor ligula congue. Porta elementum a enim euismod quam justo lectus. Imperdiet mollis nullam volutpat porttitor ullamcorper rutrum gravida. Ornare sagittis vehicula praesent dui felis venenatis ultrices. Potenti ultricies habitant morbi senectus netus suscipit auctor. Platea dictumst lorem ipsum dolor sit amet consectetur. Vitae pellentesque sem placerat in id cursus mi. Eu aenean sed diam urna tempor pulvinar vivamus. Iaculis massa nisl malesuada lacinia integer nunc posuere. Taciti sociosqu ad litora torquent per conubia nostra. Et magnis dis parturient montes nascetur ridiculus mus. Mattis scelerisque maximus eget fermentum odio phasellus non. Vestibulum fusce dictum risus blandit quis suspendisse aliquet. Neque at luctus nibh finibus facilisis dapibus etiam. Viverra ac tincidunt nam porta elementum a enim. Arcu dignissim velit aliquam imperdiet mollis nullam volutpat. Turpis fames primis vulputate ornare sagittis vehicula praesent. Feugiat tristique accumsan maecenas potenti ultricies habitant morbi. Cubilia curae hac habitasse platea dictumst lorem ipsum. Quisque faucibus ex sapien vitae pellentesque sem placerat. Duis convallis tempus leo eu aenean sed diam. Nec metus bibendum egestas iaculis massa nisl malesuada. Semper vel class aptent taciti sociosqu ad litora. Orci varius natoque penatibus et magnis dis parturient. Eros lobortis nulla molestie mattis scelerisque maximus eget. Efficitur laoreet mauris pharetra vestibulum fusce dictum risus. Consequat magna ante condimentum neque at luctus nibh. Ligula congue sollicitudin erat viverra ac tincidunt nam. Justo lectus commodo augue arcu dignissim velit aliquam. Rutrum gravida cras eleifend turpis fames primis vulputate. Venenatis ultrices proin libero feugiat tristique accumsan maecenas. Suscipit auctor curabitur facilisi cubilia curae hac habitasse. Amet consectetur adipiscing elit quisque faucibus ex sapien. Cursus mi pretium tellus duis convallis tempus leo. Pulvinar vivamus fringilla lacus nec metus bibendum egestas. Nunc posuere ut hendrerit semper vel class aptent. Conubia nostra inceptos himenaeos orci varius natoque penatibus. Ridiculus mus donec rhoncus eros lobortis nulla molestie. Phasellus non purus est efficitur laoreet mauris pharetra. Suspendisse aliquet nisi sodales consequat magna ante condimentum. Dapibus etiam interdum tortor ligula congue sollicitudin erat. Aenim euismod quam justo lectus commodo augue. Nullam volutpat porttitor ullamcorper rutrum gravida cras eleifend. Vehicula praesent dui felis venenatis ultrices proin libero. Habitant morbi senectus netus suscipit auctor curabitur facilisi. Lorem ipsum dolor sit amet consectetur adipiscing elit. Sem placerat in id cursus mi pretium tellus. Sed diam urna tempor pulvinar vivamus fringilla lacus. Nisl malesuada lacinia integer nunc posuere ut hendrerit. Ad litora torquent per conubia nostra inceptos himenaeos. Dis parturient montes nascetur ridiculus mus donec rhoncus. Maximus eget fermentum odio phasellus non purus est. Dictum risus blandit quis suspendisse aliquet nisi sodales. Luctus nibh finibus facilisis dapibus etiam interdum tortor. Tincidunt nam porta elementum a enim euismod quam. Velit aliquam imperdiet mollis nullam volutpat porttitor ullamcorper. Primis vulputate ornare sagittis vehicula praesent dui felis. Accumsan maecenas potenti ultricies habitant morbi senectus netus. Hac habitasse platea dictumst lorem ipsum dolor sit.";
 
-int main(){
-     string s = "Huffman coding is a popular lossless data compression algorithm. It assigns shorter binary codes to frequently occurring characters and longer binary codes to rare characters. This makes the encoded message smaller while preserving all the original data. For example, the letter 'e' appears more often than the letter 'z' in many English texts. A good compression algorithm should encode repeated letters efficiently, handle spaces and punctuation correctly, and decode the compressed data ////back into exactly the same text. Huffman coding, Huffman coding, Huffman coding!";
-    // string s = "this is a test string to test huffman coding. this is a test string to test huffman coding. this is a test string to test huffman coding. this is a test string to test huffman coding.";
+    Huffman h;
 
-     // string s = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.";
+    h.compress(text);
+    h.printSizes(text);
 
-    set<char> set;
-    vector<char> arr;
-    int freq[256] ={0};
+    cout << "\nOriginal string: " << text << '\n';
 
-    for (char c : s) {
-        set.insert(c);
-        freq[c]++;
-    }
+    cout << "Packed bytes: ";
 
-    for(char c : set) {
-        arr.push_back(c);
-    }
+    string decoded = h.decompress();
+
+    cout << "\nDecompressed string: " << decoded << '\n';
+
+    cout << "Original size: "
+         << text.size() << " bytes\n";
 
 
-    // vector<char> arr = {'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k'};
-    // int freq[] = { 3, 11, 2, 1, 6, 7, 8, 5, 9, 4, 10 };
-    int size = arr.size();
 
 
-    Node* root = NULL;
+    cout << (decoded == text ? "Success!\n" : "Failed!\n");
 
-    unordered_map<char, string> huffmanCodes =  huffmancodes(arr, freq, size, root);
-
-    for(auto h : huffmanCodes) {
-        cout << h.first << ": " << h.second << "\n";
-    }
-
-    string huffmanstring = "";
-    for (char c : s) {
-        huffmanstring += huffmanCodes[c];
-    }
-
-    string decoded = decompress(root, huffmanstring);
-
-    // vector<unsigned char> vec = packBits(huffmanstring);
-
-    // cout <<endl<< sizeof(huffmanstring);
-    // cout <<endl << s.length() <<endl << huffmanstring.length();
-    //
-    cout << "\nOriginal String length (bytes): " << s.length() << endl;
-    cout << "Encoded Binary String length (bits): " << huffmanstring.length() << endl;
-    cout << "Decoded Binary String  " << decoded << endl;
-    cout << "\nEncoded Text:\n" << huffmanstring << endl;
-
+    return 0;
 }

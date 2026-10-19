@@ -8,6 +8,26 @@
 #include <stack>
 using namespace std;
 
+class Compare {
+public:
+    bool operator()(Node* a, Node* b) {
+        return a->freq > b->freq;
+    }
+};
+
+class Node {    //binary tree
+public:
+    char ch;
+    int freq;
+    Node *left, *right;
+
+    Node(char c, int f) {
+        ch = c;
+        freq = f;
+        left = right = nullptr;
+    }
+};
+
 class System
 {
 protected:
@@ -16,7 +36,7 @@ protected:
     vector<string> downloadQueue;
 
     void registerFileName(string fp){//Adds filename into the directory
-        
+
         stack<char> filename;
         string fn;
         for (int i = fp.size(); i > 0; i--)
@@ -29,7 +49,7 @@ protected:
             {
                 break;
             }
-            
+
         }
 
         while (!filename.empty())
@@ -38,15 +58,15 @@ protected:
             filename.pop();
         }
         fileDirectory.push_back(fn);
-        
-        
+
+
     }
 
     string readFile(string filepath){//Reads the file into a string
-        
+
         registerFileName(filepath);
 
-        ifstream file(filepath);        
+        ifstream file(filepath);
         if (file.is_open() != true)
         {
             cout << "File reading unsuccesful";
@@ -63,7 +83,7 @@ protected:
     }
 
 
-    
+
 };
 
 class Encryptor : protected System {
@@ -80,6 +100,6 @@ class Compressor : protected System {
 
 int main(){
 
-    
+
     return 0;
 }
