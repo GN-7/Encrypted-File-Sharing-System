@@ -13,21 +13,19 @@ class System
 {
 public:
     vector<string> fileDirectory;
-    vector<string> uploadQueue;
-    vector<string> downloadQueue;
 
-    void registerFileName(string fp)
+    string extractFileName(string fp)
     { // Adds filename into the directory
 
         stack<char> filename;
         string fn;
-        for (int i = fp.size(); i > 0; i--)
+        for (int i = fp.size() - 5; i >= 0; i--) // - 5 so that .txt doesn't come up in filename
         {
-            if (fp[i] != '/')
+            if (fp[i] != '/' )
             {
                 filename.push(fp[i]);
             }
-            if (fp[i] == '/')
+            if (fp[i] == '/' || fp[i] == '\\')
             {
                 break;
             }
@@ -38,15 +36,12 @@ public:
             fn.push_back(filename.top());
             filename.pop();
         }
-        //Removes the null character from end of filename
-        fn.pop_back();
-        fileDirectory.push_back(fn);
+
+        return fn;
     }
 
     string readFiletoString(string filepath)
     { // Reads the file into a string
-
-        registerFileName(filepath);
 
         ifstream file(filepath);
         if (file.is_open() != true)
@@ -58,20 +53,22 @@ public:
         buffer << file.rdbuf();
         string fileContents = buffer.str();
 
+        cout << "File reading successful!";
         return fileContents;
     }
 
-    void writeStringtoFile(string str, string fp)
-    {
-        ofstream file(fp);
+    void writeStringtoFile(const string& str, const string& fp){
+        ofstream file(fp, std::ios::binary);
 
-        if (file.is_open() != true)
+        if (!file.is_open())
         {
-            cout << "File writing unsuccesful";
+            cout << "File writing unsuccesful\n";
+            return;
         }
 
-        file << str;
-    }
+        file.write(str.data(), str.size());
+        cout << "File is uploaded successfully";
+}
  
     void merge(vector<string> &a, int low, int mid, int high){
         vector<string> temp;
@@ -108,6 +105,7 @@ public:
 
     string BinarySearch(vector<string> fn, string tn)
 {
+    mergeSort(fileDirectory, 0, fileDirectory.size() - 1);
     int start = 0;
     int end = fn.size() - 1;
 
@@ -129,6 +127,18 @@ public:
     }
     return "**FILE_NOT_FOUND**";
 }
+
+    bool validateFileandRegister(string fn){
+        if (BinarySearch(fileDirectory, fn) == "**ERROR_FILE_NOT_FOUND**"){ 
+            fileDirectory.push_back(fn);
+            cout << "File Name Registered successfully";
+            return true;
+        }
+        else{ 
+            cout << "File name taken. Enter unique filename";
+            return false;
+        }
+    }
 
 };
 
@@ -403,7 +413,23 @@ public:
 
 int main()
 {
-    System sys; Huffman h;
+    System sys; Huffman h; string network_path = ""; //----> Put the network path here
+
+        // cout << "Enter filepath: "; string inputFilePath; cin >> inputFilePath;
+        // string inputFileName = sys.extractFileName(inputFilePath);
+        // string outputfilepath =  network_path + inputFileName + ".txt"; 
+
+        // string data = sys.readFiletoString(inputFilePath);
+        // string data_compressed = h.compress(data);
+        // sys.writeStringtoFile(data_compressed, outputfilepath);
+
+        // string data9 = sys.readFiletoString(outputfilepath);
+        // string data9_decompressed = h.decompress(data9);
+        // sys.writeStringtoFile(data9_decompressed, "decompressed.txt");
+
+
     
-    string inputfilepath = "";
+    
+    
+    
 }
