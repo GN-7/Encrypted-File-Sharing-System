@@ -16,8 +16,9 @@ public:
     vector<string> uploadQueue;
     vector<string> downloadQueue;
 
-    void registerFileName(string fp){//Adds filename into the directory
-        
+    void registerFileName(string fp)
+    { // Adds filename into the directory
+
         stack<char> filename;
         string fn;
         for (int i = fp.size(); i > 0; i--)
@@ -30,7 +31,6 @@ public:
             {
                 break;
             }
-            
         }
 
         while (!filename.empty())
@@ -38,16 +38,17 @@ public:
             fn.push_back(filename.top());
             filename.pop();
         }
+        //Removes the null character from end of filename
+        fn.pop_back();
         fileDirectory.push_back(fn);
-        
-        
     }
 
-    string readFiletoString(string filepath){//Reads the file into a string
-        
+    string readFiletoString(string filepath)
+    { // Reads the file into a string
+
         registerFileName(filepath);
 
-        ifstream file(filepath);        
+        ifstream file(filepath);
         if (file.is_open() != true)
         {
             cout << "File reading unsuccesful";
@@ -60,12 +61,10 @@ public:
         return fileContents;
     }
 
-    void validateFile(){//Binary Search for Filename if it exists in the Directory
-    }
-
-    void writeStringtoFile(string str, string fp){
+    void writeStringtoFile(string str, string fp)
+    {
         ofstream file(fp);
-                
+
         if (file.is_open() != true)
         {
             cout << "File writing unsuccesful";
@@ -73,45 +72,106 @@ public:
 
         file << str;
     }
+ 
+    void merge(vector<string> &a, int low, int mid, int high){
+        vector<string> temp;
+        int left = low;
+        int right = mid + 1;
 
+        while(left < mid + 1 && right <= high){    
+            if(a[left] <= a[right]){
+                temp.push_back(a[left]);
+                left++;
+            }
+            else{ temp.push_back(a[right]); right++;}
+        }
+
+        while(left <= mid){ temp.push_back(a[left]); left++;}
+        while(right <= high){ temp.push_back(a[right]); right++;}
+
+        for (int i = low; i <= high; i++)
+        {
+            a[i] = temp[i - low]; 
+        }
     
+}
+
+    void mergeSort(vector<string> &a, int low, int high){
+    if(low == high) return;
+    int mid = (low + high)/2;
+
+    mergeSort(a, low, mid);
+    mergeSort(a, mid + 1, high);
+
+    merge(a, low, mid, high);
+}
+
+    string BinarySearch(vector<string> fn, string tn)
+{
+    int start = 0;
+    int end = fn.size() - 1;
+
+    while (start <= end)
+    {
+        int mid = start + (end-start) / 2;
+        if (tn > fn[mid])
+        {
+            start = mid + 1;
+        }
+        else if (fn[mid] > tn)
+        {
+            end = mid - 1;
+        }
+        else
+        {
+            return fn[mid];
+        }
+    }
+    return "**FILE_NOT_FOUND**";
+}
+
 };
 
-
-class Node {
+class Node
+{
 public:
     char ch;
     int freq;
     Node *left, *right;
 
-    Node(char c, int f) {
+    Node(char c, int f)
+    {
         ch = c;
         freq = f;
         left = right = nullptr;
     }
 };
 
-// Min-heap comparator
-class Compare {
+class Compare
+{
 public:
-    bool operator()(Node* a, Node* b) {
+    bool operator()(Node *a, Node *b)
+    {
         return a->freq > b->freq;
     }
 };
 
-class Huffman {
-    Node* root;
+class Huffman
+{
+    Node *root;
     unordered_map<char, string> codes;
 
     string storedTree;
     vector<unsigned char> payload;
     int originalSize = 0;
 
-    void generateCodes(Node* node, string code) {
+    void generateCodes(Node *node, string code)
+    {
         if (!node)
             return;
 
-        if (!node->left && !node->right) {
+        if (!node->left && !node->right)
+        {
             codes[node->ch] = code.empty() ? "0" : code;
             return;
         }
@@ -120,30 +180,31 @@ class Huffman {
         generateCodes(node->right, code + "1");
     }
 
-    Node* buildTree(const string& text) {
+    Node *buildTree(const string &text)
+    {
         unordered_map<char, int> freq;
 
         for (char ch : text)
             freq[ch]++;
 
-        priority_queue<Node*, vector<Node*>, Compare> pq;
+        priority_queue<Node *, vector<Node *>, Compare> pq;
 
-        for (auto& p : freq)
+        for (auto &p : freq)
             pq.push(new Node(p.first, p.second));
 
         if (pq.empty())
             return nullptr;
 
-        while (pq.size() > 1) {
-            Node* left = pq.top();
+        while (pq.size() > 1)
+        {
+            Node *left = pq.top();
             pq.pop();
 
-            Node* right = pq.top();
+            Node *right = pq.top();
             pq.pop();
 
-            Node* parent = new Node(
-                '\0', left->freq + right->freq
-            );
+            Node *parent = new Node(
+                '\0', left->freq + right->freq);
 
             parent->left = left;
             parent->right = right;
@@ -154,11 +215,13 @@ class Huffman {
         return pq.top();
     }
 
-    void storeTree(Node* node) {    //preorder sequence
+    void storeTree(Node *node)
+    { // preorder sequence
         if (!node)
             return;
 
-        if (!node->left && !node->right) {
+        if (!node->left && !node->right)
+        {
             storedTree += '1';
             storedTree += node->ch;
             return;
@@ -170,13 +233,15 @@ class Huffman {
         storeTree(node->right);
     }
 
-    Node* rebuildTree(int& pos) {
+    Node *rebuildTree(int &pos)
+    {
         if (pos >= (int)storedTree.size())
             return nullptr;
 
         char marker = storedTree[pos++];
 
-        if (marker == '1') {
+        if (marker == '1')
+        {
             if (pos >= (int)storedTree.size())
                 return nullptr;
 
@@ -187,7 +252,7 @@ class Huffman {
         if (marker != '0')
             return nullptr;
 
-        Node* node = new Node('\0', 0);
+        Node *node = new Node('\0', 0);
 
         node->left = rebuildTree(pos);
         node->right = rebuildTree(pos);
@@ -201,7 +266,8 @@ class Huffman {
 public:
     Huffman() : root(nullptr) {}
 
-    string compress(const string& text) {
+    string compress(const string &text)
+    {
         codes.clear();
         storedTree.clear();
         payload.clear();
@@ -218,13 +284,16 @@ public:
         unsigned char buffer = 0;
         int bitCount = 0;
 
-        for (char ch : text) {
-            for (char bit : codes[ch]) {
+        for (char ch : text)
+        {
+            for (char bit : codes[ch])
+            {
                 buffer = (buffer << 1) | (bit == '1');
 
                 bitCount++;
 
-                if (bitCount == 8) {
+                if (bitCount == 8)
+                {
                     payload.push_back(buffer);
                     buffer = 0;
                     bitCount = 0;
@@ -232,7 +301,8 @@ public:
             }
         }
         // for remaing that take bits less than 8
-        if (bitCount > 0) {
+        if (bitCount > 0)
+        {
             buffer <<= (8 - bitCount);
             payload.push_back(buffer);
         }
@@ -240,61 +310,67 @@ public:
         return string(payload.begin(), payload.end());
     }
 
-    string decompress(const string& compressedData) {
-    // Convert the compressed string into the payload vector of unsigned chars
-    payload.assign(compressedData.begin(), compressedData.end());
+    string decompress(const string &compressedData)
+    {
+        // Convert the compressed string into the payload vector of unsigned chars
+        payload.assign(compressedData.begin(), compressedData.end());
 
-    string decoded;
+        string decoded;
 
-    if (originalSize == 0)
-        return decoded;
+        if (originalSize == 0)
+            return decoded;
 
-    int pos = 0;
-    Node* decodeRoot = rebuildTree(pos);
+        int pos = 0;
+        Node *decodeRoot = rebuildTree(pos);
 
-    if (!decodeRoot || pos != (int)storedTree.size())
-        return "";
+        if (!decodeRoot || pos != (int)storedTree.size())
+            return "";
 
-    // If only 1 character was compressed
-    if (!decodeRoot->left && !decodeRoot->right) {
-        for (int i = 0; i < originalSize; i++)
-            decoded += decodeRoot->ch;
+        // If only 1 character was compressed
+        if (!decodeRoot->left && !decodeRoot->right)
+        {
+            for (int i = 0; i < originalSize; i++)
+                decoded += decodeRoot->ch;
 
-        return decoded;
-    }
+            return decoded;
+        }
 
-    Node* current = decodeRoot;
+        Node *current = decodeRoot;
 
-    for (int i = 0; i < (int)payload.size(); i++) {
-        unsigned char byte = payload[i];
+        for (int i = 0; i < (int)payload.size(); i++)
+        {
+            unsigned char byte = payload[i];
 
-        for (int bit = 7; bit >= 0; bit--) {
-            int value = (byte >> bit) & 1;
+            for (int bit = 7; bit >= 0; bit--)
+            {
+                int value = (byte >> bit) & 1;
 
-            if (value == 0)
-                current = current->left;
-            else
-                current = current->right;
+                if (value == 0)
+                    current = current->left;
+                else
+                    current = current->right;
 
-            if (!current)
-                return "";
+                if (!current)
+                    return "";
 
-            if (!current->left && !current->right) {
-                decoded += current->ch;
-                current = decodeRoot;
+                if (!current->left && !current->right)
+                {
+                    decoded += current->ch;
+                    current = decodeRoot;
 
-                // Stop as soon as we reach the original size
-                // (ignores padding bits in the final byte)
-                if ((int)decoded.size() == originalSize)
-                    return decoded;
+                    // Stop as soon as we reach the original size
+                    // (ignores padding bits in the final byte)
+                    if ((int)decoded.size() == originalSize)
+                        return decoded;
+                }
             }
         }
+
+        return decoded;
     }
 
-    return decoded;
-}
-
-    void printSizes(const string& text) {
+    void printSizes(const string &text)
+    {
         int originalBytes = text.size();
         int compressedBytes = payload.size();
 
@@ -313,31 +389,21 @@ public:
         cout << "Total compressed size (payload + tree): "
              << totalBytes << " bytes\n";
 
-        if (originalBytes > 0) {
+        if (originalBytes > 0)
+        {
             double saved = 100.0 *
-                (originalBytes - totalBytes) / originalBytes;
+                           (originalBytes - totalBytes) / originalBytes;
 
             cout << "Space saved: " << saved << "%\n";
         }
     }
-
 };
 
-class Compressor : protected System {
-    protected:
-        void compress(){}
-        void decompress(){}
-};
 
-int main(){
-    // System sys;
-    // Huffman huffman;
-    // string data = sys.readFiletoString("text.txt");
-    // string data_compressed = huffman.compress(data);
-    // // sys.writeStringtoFile(data_compressed, "output.txt");
 
+int main()
+{
+    System sys; Huffman h;
     
-    // string data_decompressed = huffman.decompress(data_compressed);
-    // sys.writeStringtoFile(data_decompressed, "output_decompressed.txt");
-
+    string inputfilepath = "";
 }
