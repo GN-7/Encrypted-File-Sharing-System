@@ -415,6 +415,47 @@ int main()
 {
     System sys; Huffman h; string network_path = ""; //----> Put the network path here
 
+        while(true){
+            int choice;
+            cout << "To upload files to the shared server, enter 1\n";
+            cout << "To download files from the shared server, enter 2\n";
+            cout << "To exit the program, enter 3\n";
+            cout << "Enter your choice: "; cin>> choice;
+
+            if(choice == 1){
+                string filepath;
+                cout << "-------------------------------------------" << endl;
+                cout << "Enter absolute filepath: " << endl; cin>>filepath;
+                string inputFileName = sys.extractFileName(filepath);
+                if(sys.validateFileandRegister(inputFileName)){
+                    string outputfilepath =  network_path + inputFileName + ".txt";
+                    string data = sys.readFiletoString(filepath);
+                    cout << "> File reading successful" << endl;
+                    string data_compressed = h.compress(data);
+                    cout <<"> File compressed successfully" <<endl;
+                    sys.writeStringtoFile(data_compressed, outputfilepath);
+                    cout <<"> File uploaded successfully"<<endl;
+                }
+                else{cout << "File Exists Already! Enter unique  file" << endl;}
+            }
+            else if(choice == 2){
+                string filename;
+                cout << "-------------------------------------------" << endl;
+                cout << "Enter filename: " << endl; cin >> filename;
+                if(sys.BinarySearch(sys.fileDirectory, filename) == "**FILE_NOT_FOUND**"){
+                    cout << "File does not exist in server! Enter proper filename" << endl;
+                }
+                else{
+                    string shared_file_path = network_path + filename + ".txt";
+                    string data_ = sys.readFiletoString(shared_file_path);
+                    string data_decompressed = h.decompress(data_);
+                    sys.writeStringtoFile(data_decompressed, "C:\\Users\\Rescue\\Downloads\\" + filename + ".txt");
+                }
+
+
+            }
+        }
+
         // cout << "Enter filepath: "; string inputFilePath; cin >> inputFilePath;
         // string inputFileName = sys.extractFileName(inputFilePath);
         // string outputfilepath =  network_path + inputFileName + ".txt"; 
