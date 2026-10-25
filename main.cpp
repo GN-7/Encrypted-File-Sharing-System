@@ -46,14 +46,14 @@ public:
         ifstream file(filepath);
         if (file.is_open() != true)
         {
-            cout << "File reading unsuccesful";
+            cout << " > File reading unsuccesful!" << endl;
         }
 
         ostringstream buffer;
         buffer << file.rdbuf();
         string fileContents = buffer.str();
 
-        cout << "File reading successful!";
+        cout << " > File reading successful!" << endl;
         return fileContents;
     }
 
@@ -62,12 +62,12 @@ public:
 
         if (!file.is_open())
         {
-            cout << "File writing unsuccesful\n";
+            cout << " > File writing unsuccesful" << endl;
             return;
         }
 
         file.write(str.data(), str.size());
-        cout << "File is uploaded successfully";
+        cout << " > File writing successful" << endl;
 }
  
     void merge(vector<string> &a, int low, int mid, int high){
@@ -128,17 +128,17 @@ public:
     return "**FILE_NOT_FOUND**";
 }
 
-    bool validateFileandRegister(string fn){
-        if (BinarySearch(fileDirectory, fn) == "**ERROR_FILE_NOT_FOUND**"){ 
-            fileDirectory.push_back(fn);
-            cout << "File Name Registered successfully";
-            return true;
-        }
-        else{ 
-            cout << "File name taken. Enter unique filename";
-            return false;
-        }
-    }
+    // bool validateFileandRegister(string fn){
+    //     if (BinarySearch(fileDirectory, fn) == "**ERROR_FILE_NOT_FOUND**"){ 
+    //         fileDirectory.push_back(fn);
+    //         cout << "File Name Registered successfully";
+    //         return true;
+    //     }
+    //     else{ 
+    //         cout << "File name taken. Enter unique filename";
+    //         return false;
+    //     }
+    // }
 
 };
 
@@ -170,9 +170,19 @@ class Huffman
 {
     Node *root;
     unordered_map<char, string> codes;
-
+    string encryptionKey;
     string storedTree;
     vector<unsigned char> payload;
+    string xor_ed(const string &data, const string &key)
+    {
+        if (key.empty()) return data;
+        string encryptedstring = data;
+        for (int i = 0; i < data.size(); ++i)
+        {
+            encryptedstring[i] = data[i] ^ key[i % key.size()];
+        }
+        return encryptedstring;
+    }
     int originalSize = 0;
 
     void generateCodes(Node *node, string code)
@@ -274,7 +284,13 @@ class Huffman
     }
 
 public:
-    Huffman() : root(nullptr) {}
+    Huffman(string key = "") : root(nullptr), encryptionKey(key) {}
+
+    void setKey(string key)
+    {
+        encryptionKey = key;
+    }
+    
 
     string compress(const string &text)
     {
@@ -310,20 +326,26 @@ public:
                 }
             }
         }
-        // for remaing that take bits less than 8
+
         if (bitCount > 0)
         {
             buffer <<= (8 - bitCount);
             payload.push_back(buffer);
         }
 
-        return string(payload.begin(), payload.end());
+        string compressedStr(payload.begin(), payload.end());
+
+        // Automatically encrypts immediately as compression completes
+        return xor_ed(compressedStr, encryptionKey);
     }
 
     string decompress(const string &compressedData)
     {
-        // Convert the compressed string into the payload vector of unsigned chars
-        payload.assign(compressedData.begin(), compressedData.end());
+        // Automatically decrypts immediately when decompress is called
+        string decryptedData = xor_ed(compressedData, encryptionKey);
+
+        // Convert the decrypted string into the payload vector of unsigned chars
+        payload.assign(decryptedData.begin(), decryptedData.end());
 
         string decoded;
 
@@ -368,8 +390,6 @@ public:
                     decoded += current->ch;
                     current = decodeRoot;
 
-                    // Stop as soon as we reach the original size
-                    // (ignores padding bits in the final byte)
                     if ((int)decoded.size() == originalSize)
                         return decoded;
                 }
@@ -378,7 +398,6 @@ public:
 
         return decoded;
     }
-
     void printSizes(const string &text)
     {
         int originalBytes = text.size();
@@ -417,6 +436,7 @@ int main()
 
         while(true){
             int choice;
+            cout << "-------------------------------------------" << endl;
             cout << "To upload files to the shared server, enter 1\n";
             cout << "To download files from the shared server, enter 2\n";
             cout << "To exit the program, enter 3\n";
@@ -427,50 +447,28 @@ int main()
                 cout << "-------------------------------------------" << endl;
                 cout << "Enter absolute filepath: " << endl; cin>>filepath;
                 string inputFileName = sys.extractFileName(filepath);
-                if(sys.validateFileandRegister(inputFileName)){
-                    string outputfilepath =  network_path + inputFileName + ".txt";
+                
+                    string outputfilepath = network_path + inputFileName + ".txt";
                     string data = sys.readFiletoString(filepath);
-                    cout << "> File reading successful" << endl;
                     string data_compressed = h.compress(data);
-                    cout <<"> File compressed successfully" <<endl;
-                    sys.writeStringtoFile(data_compressed, outputfilepath);
-                    cout <<"> File uploaded successfully"<<endl;
-                }
-                else{cout << "File Exists Already! Enter unique  file" << endl;}
+                    cout << " > File Compressed and Encrypted" << endl;
+                    sys.writeStringtoFile(data_compressed, outputfilepath);              
             }
             else if(choice == 2){
                 string filename;
                 cout << "-------------------------------------------" << endl;
                 cout << "Enter filename: " << endl; cin >> filename;
-                if(sys.BinarySearch(sys.fileDirectory, filename) == "**FILE_NOT_FOUND**"){
-                    cout << "File does not exist in server! Enter proper filename" << endl;
-                }
-                else{
+                // if(sys.BinarySearch(sys.fileDirectory, filename) == "**FILE_NOT_FOUND**"){
+                //     cout << "File does not exist in server! Enter proper filename" << endl;
+                // }
+                // else{
                     string shared_file_path = network_path + filename + ".txt";
                     string data_ = sys.readFiletoString(shared_file_path);
                     string data_decompressed = h.decompress(data_);
+                    cout << " > File is decompressed and decrypted" << endl;
                     sys.writeStringtoFile(data_decompressed, "C:\\Users\\Rescue\\Downloads\\" + filename + ".txt");
-                }
-
-
+                //}
             }
-        }
-
-        // cout << "Enter filepath: "; string inputFilePath; cin >> inputFilePath;
-        // string inputFileName = sys.extractFileName(inputFilePath);
-        // string outputfilepath =  network_path + inputFileName + ".txt"; 
-
-        // string data = sys.readFiletoString(inputFilePath);
-        // string data_compressed = h.compress(data);
-        // sys.writeStringtoFile(data_compressed, outputfilepath);
-
-        // string data9 = sys.readFiletoString(outputfilepath);
-        // string data9_decompressed = h.decompress(data9);
-        // sys.writeStringtoFile(data9_decompressed, "decompressed.txt");
-
-
-    
-    
-    
-    
+            else{break;}
+        };    
 }
