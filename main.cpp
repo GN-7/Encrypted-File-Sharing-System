@@ -28,14 +28,15 @@ public:
         file.close();
     }
 
-    void pushFileDirectory(vector<string> fd){
-        ofstream file("directory.txt");
+    void pushFileDirectory(vector<string> fd, string fp){
+        ofstream file(fp);
 
         if (!file.is_open())
         {
             cout << " > File writing unsuccesful" << endl;
             return;
         }
+        
         for ( auto i : fd){
             file << i + "\n";
         }
@@ -48,7 +49,7 @@ public:
         // - 5 so that .txt doesn't come up in filename
         for (int i = fp.size() - 5; i >= 0; i--) 
         {
-            if (fp[i] == '/' || fp[i] == '\\')
+            if (fp[i] == '/' || fp[i] == '\\' || '/')
             {
                 break;
             }
@@ -66,7 +67,7 @@ public:
 
     string readFiletoString(string filepath)
     { 
-        ifstream file(filepath);
+        ifstream file(filepath, std::ios::binary);
         if (file.is_open() != true)
         {
             cout << " > File reading unsuccesful!" << endl;
@@ -125,11 +126,10 @@ public:
         merge(a, low, mid, high);
     }
 
-    bool BinarySearch(vector<string> fn, string tn)
+    bool BinarySearch(vector<string> &fn, string tn)
     {
         if (fn.empty()) return false;
         
-        mergeSort(fn, 0, fn.size() - 1);
         int start = 0;
         int end = fn.size() - 1;
 
@@ -296,7 +296,7 @@ class Huffman
     }
 
 public:
-    Huffman(string key = "4") : root(nullptr), encryptionKey(key) {}
+    Huffman(string key) : root(nullptr), encryptionKey(key) {}
 
     void setKey(string key)
     {
@@ -353,10 +353,10 @@ public:
     string decompress(const string &packagedData)
     {
         // Unpackage the metadata
-        size_t firstDelim = packagedData.find('|');
+        size_t firstDelim = packagedData.find('~');
         if (firstDelim == string::npos) return "";
 
-        size_t secondDelim = packagedData.find('|', firstDelim + 1);
+        size_t secondDelim = packagedData.find('~', firstDelim + 1);
         if (secondDelim == string::npos) return "";
 
         string sizeStr = packagedData.substr(0, firstDelim);
@@ -418,12 +418,39 @@ public:
 
         return decoded;
     }
+
+    void printSizes(const string& text) {
+        int originalBytes = text.size();
+        int compressedBytes = payload.size();
+
+        // Include the serialized tree metadata.
+        int totalBytes = compressedBytes + storedTree.size();
+
+        cout << "Original size: "
+             << originalBytes << " bytes\n";
+
+        cout << "Compressed payload size: "
+             << compressedBytes << " bytes\n";
+
+        cout << "Stored tree size: "
+             << storedTree.size() << " bytes\n";
+
+        cout << "Total compressed size (payload + tree): "
+             << totalBytes << " bytes\n";
+
+        if (originalBytes > 0) {
+            double saved = 100.0 *
+                (originalBytes - totalBytes) / originalBytes;
+
+            cout << "Space saved: " << saved << "%\n";
+        }
+    }
 };
 
 int main()
 {
     System sys; 
-    Huffman h; 
+    Huffman h ("4"); 
     
     // Ensure this folder exists on your drive
     string network_path = "C:\\Nipun_Code\\"; 
@@ -431,6 +458,8 @@ int main()
     sys.getFileDirectory("directory.txt");
     
     while(true){
+        sys.fileDirectory.clear();
+        sys.getFileDirectory(network_path + "directory.txt");
         int choice;
         cout << "-------------------------------------------" << endl;
         cout << "To upload files to the shared server, enter 1\n";
@@ -450,15 +479,18 @@ int main()
             string inputFileName = sys.extractFileName(filepath);
             
             if(sys.BinarySearch(sys.fileDirectory, inputFileName) == false){
-                sys.fileDirectory.push_back(inputFileName);
+                
                 string ofp = network_path + inputFileName + ".txt";
                 string data = sys.readFiletoString(filepath);
                 
                 if (!data.empty()) {
+                    sys.fileDirectory.push_back(inputFileName);
+                    sys.mergeSort(sys.fileDirectory, 0, sys.fileDirectory.size() - 1);
                     string data_compressed = h.compress(data);
-                    cout << " > File Compressed and Encrypted" << endl;
+                    h.printSizes(data);
                     
-                    sys.writeStringtoFile(data_compressed, ofp);              
+                    sys.writeStringtoFile(data_compressed, ofp);  
+                    sys.pushFileDirectory(sys.fileDirectory, network_path + "directory.txt");            
                 }
             }
             else{ 
@@ -490,7 +522,7 @@ int main()
             }
         }
         else{
-            sys.pushFileDirectory(sys.fileDirectory);
+            sys.pushFileDirectory(sys.fileDirectory, network_path + "directory.txt");
             break;
         }
     };    
