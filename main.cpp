@@ -87,12 +87,12 @@ public:
         ofstream file(fp, std::ios::binary);
         if (!file.is_open())
         {
-            cout << " > File writing unsuccesful to: " << fp << endl;
+            cout << " \033[31m> File writing unsuccesful to: " << fp << endl;
             return;
         }
 
         file.write(str.data(), str.size());
-        cout << " > File writing successful" << endl;
+        cout << " \033[32m> File writing successful" << endl;
     }
 
     void merge(vector<string> &a, int low, int mid, int high){
@@ -451,13 +451,15 @@ public:
 
 void printBanner() {
     cout << R"(
-        _______   __  ___________           __        _______    ______    __    __   __  ___      ___  _______
-       |   _  "\ |"  |("     _   ")        /""\      /"      \  /" _  "\  /" |  | "\ |"  |"  \    /"  |/"     "|
-       (. |_)  :)||  |)__/  \\__/         /    \    |:        |(: ( \___)(:  (__)  :)||  |\   \  //  /(: ______)
-       |:     \/ |:  |   \\_ /           /' /\  \   |_____/   ) \/ \      \/      \/ |:  | \\  \/. ./  \/    |
-       (|  _  \\ |.  |   |.  |          //  __'  \   //      /  //  \ _   //  __  \\ |.  |  \.    //   // ___)_
-       |: |_)  :)/   |\  \:  |         /   /  \\  \ |:  __   \ (:   _) \ (:  (  )  :)/   |\  \\   /   (:      "|
-       (_______/|__ _|_|  \__|        (___/    \___)|__|  \___) \_______) \__|  |__/|__ _|_|  \__/     \_______)
+        ______   _____  _________        _       _______      ______  ____  ____  _____  ____   ____  ________
+       |_   _ \ |_   _||  _   _  |      / \     |_   __ \   .' ___  ||_   ||   _||_   _||_  _| |_  _||_   __  |
+         | |_) |  | |  |_/ | | \_|     / _ \      | |__) | / .'   \_|  | |__| |    | |    \ \   / /    | |_ \_|
+         |  __'.  | |      | |        / ___ \     |  __ /  | |         |  __  |    | |     \ \ / /     |  _| _
+        _| |__) |_| |_    _| |_     _/ /   \ \_  _| |  \ \_\ `.___.'\ _| |  | |_  _| |_     \ ' /     _| |__/ |
+       |_______/|_____|  |_____|   |____| |____||____| |___|`.____ .'|____||____||_____|     \_/     |________|
+
+
+
 
 )" << endl;
 }
@@ -473,24 +475,25 @@ int main()
     string network_path = network_path_w;
 
     sys.getFileDirectory("directory.txt");
+    printBanner();
 
     while(true){
         sys.fileDirectory.clear();
         sys.getFileDirectory(network_path + "directory.txt");
         int choice;
         cout << "\033[2J\033[1;1H";
-        printBanner();
+
         cout << "\033[1;35m"; // Bright Magenta/Purple
         cout << "                                     CORE OPERATIONS             \n";
         cout << "                        -> Push File to Server\n";
         cout << "                        -> Pull File from Server\n";
         cout << "                        -> Exit Program\n";
-        cout << "                      Enter choice ➔ ";
+        cout << "                      Enter choice -> ";
         cin >> choice;
 
         if(choice == 1){
             string filepath;
-             cout << "                     \033[1;36m►\033[0m Enter absolute filepath -> ";
+             cout << "                     \033[0m Enter absolute filepath -> ";
 
             // Rolled back to original cin method
             cin >> filepath;
