@@ -452,12 +452,12 @@ public:
 void printBanner() {
     cout << R"(
         _______   __  ___________           __        _______    ______    __    __   __  ___      ___  _______
-       |   _  "\ |" \("     _   ")         /""\      /"      \  /" _  "\  /" |  | "\ |" \|"  \    /"  |/"     "|
+       |   _  "\ |"  |("     _   ")        /""\      /"      \  /" _  "\  /" |  | "\ |"  |"  \    /"  |/"     "|
        (. |_)  :)||  |)__/  \\__/         /    \    |:        |(: ( \___)(:  (__)  :)||  |\   \  //  /(: ______)
        |:     \/ |:  |   \\_ /           /' /\  \   |_____/   ) \/ \      \/      \/ |:  | \\  \/. ./  \/    |
        (|  _  \\ |.  |   |.  |          //  __'  \   //      /  //  \ _   //  __  \\ |.  |  \.    //   // ___)_
-       |: |_)  :)/\  |\  \:  |         /   /  \\  \ |:  __   \ (:   _) \ (:  (  )  :)/\  |\  \\   /   (:      "|
-       (_______/(__\_|_)  \__|        (___/    \___)|__|  \___) \_______) \__|  |__/(__\_|_)  \__/     \_______)
+       |: |_)  :)/   |\  \:  |         /   /  \\  \ |:  __   \ (:   _) \ (:  (  )  :)/   |\  \\   /   (:      "|
+       (_______/|__ _|_|  \__|        (___/    \___)|__|  \___) \_______) \__|  |__/|__ _|_|  \__/     \_______)
 
 )" << endl;
 }
@@ -481,34 +481,16 @@ int main()
         cout << "\033[2J\033[1;1H";
         printBanner();
         cout << "\033[1;35m"; // Bright Magenta/Purple
-        // cout << "                      ═══════════════════════════════════════════\n";
         cout << "                                     CORE OPERATIONS             \n";
-        // cout << "                      ═══════════════════════════════════════════\n;
-        cout << "                        ► Push File to Server\n";
-        cout << "                        ► Pull File from Server\n";
-        cout << "                        ► Exit Program\n";
-        // cout << "                      \033[1;35m";
-        // cout << "═══════════════════════════════════════════\n\033[0m";
+        cout << "                        -> Push File to Server\n";
+        cout << "                        -> Pull File from Server\n";
+        cout << "                        -> Exit Program\n";
         cout << "                      Enter choice ➔ ";
         cin >> choice;
-        // cout << "\033[1;35m"; // Bright Magenta/Purple
-        // cout << "                      ═══════════════════════════════════════════\n";
-        // cout << "                                     CORE OPERATIONS             \n";
-        // cout << "                      ═══════════════════════════════════════════\n\033[0m";
-        // cout << "                        \033[1;36m►\033[0m \033[1m[1]\033[0m Push File to Server\n";
-        // cout << "                        \033[1;36m►\033[0m \033[1m[2]\033[0m Pull File from Server\n";
-        // cout << "                        \033[1;36m►\033[0m \033[1m[3]\033[0m Exit Program\n";
-        // cout << "                      \033[1;35m";
-        // cout << "═══════════════════════════════════════════\n\033[0m";
-        // cout << "                      Enter choice ➔ ";
-        // cin >> choice;
 
         if(choice == 1){
             string filepath;
-            // cout << "-------------------------------------------" << endl;
-            // cout << "Enter absolute filepath: " << endl;
-            cout << "\033[1;35m                     ═══════════════════════════════════════════\033[0m\n";
-             cout << "                     \033[1;36m►\033[0m Enter absolute filepath ➔ ";
+             cout << "                     \033[1;36m►\033[0m Enter absolute filepath -> ";
 
             // Rolled back to original cin method
             cin >> filepath;
@@ -536,8 +518,7 @@ int main()
         }
         else if(choice == 2){
             string filename;
-            cout << "-------------------------------------------" << endl;
-            cout << "Enter filename: " << endl;
+            cout << "                     \033[1;36m►\033[0m Enter filename -> ";
 
             // Rolled back to original cin method
             cin >> filename;
