@@ -7,7 +7,7 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
-#include <windows.h>
+// #include <windows.h>
 using namespace std;
 
 class System
@@ -451,22 +451,25 @@ public:
 
 void printBanner() {
     cout << R"(
-                ▗▄▄▖ ▗▄▄▄▖▗▄▄▄▖     ▗▄▖ ▗▄▄▖  ▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
-                ▐▌ ▐▌  █    █      ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌  █  ▐▌  ▐▌▐▌
-                ▐▛▀▚▖  █    █      ▐▛▀▜▌▐▛▀▚▖▐▌   ▐▛▀▜▌  █  ▐▌  ▐▌▐▛▀▀▘
-                ▐▙▄▞▘▗▄█▄▖  █      ▐▌ ▐▌▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄█▄▖ ▝▚▞▘ ▐▙▄▄▖
+        _______   __  ___________           __        _______    ______    __    __   __  ___      ___  _______
+       |   _  "\ |" \("     _   ")         /""\      /"      \  /" _  "\  /" |  | "\ |" \|"  \    /"  |/"     "|
+       (. |_)  :)||  |)__/  \\__/         /    \    |:        |(: ( \___)(:  (__)  :)||  |\   \  //  /(: ______)
+       |:     \/ |:  |   \\_ /           /' /\  \   |_____/   ) \/ \      \/      \/ |:  | \\  \/. ./  \/    |
+       (|  _  \\ |.  |   |.  |          //  __'  \   //      /  //  \ _   //  __  \\ |.  |  \.    //   // ___)_
+       |: |_)  :)/\  |\  \:  |         /   /  \\  \ |:  __   \ (:   _) \ (:  (  )  :)/\  |\  \\   /   (:      "|
+       (_______/(__\_|_)  \__|        (___/    \___)|__|  \___) \_______) \__|  |__/(__\_|_)  \__/     \_______)
+
 )" << endl;
 }
 
 int main()
 {
-    SetConsoleOutputCP(CP_UTF8);
+    // SetConsoleOutputCP(CP_UTF8);
     System sys;
     Huffman h ("4");
 
     // Ensure this folder exists on your drive
     string network_path_w = "C:\\Nipun_Code\\";
-    string network_path_l = "home/"; //----------> FILL
     string network_path = network_path_w;
 
     sys.getFileDirectory("directory.txt");
@@ -478,16 +481,27 @@ int main()
         cout << "\033[2J\033[1;1H";
         printBanner();
         cout << "\033[1;35m"; // Bright Magenta/Purple
-        cout << "                      ═══════════════════════════════════════════\n";
+        // cout << "                      ═══════════════════════════════════════════\n";
         cout << "                                     CORE OPERATIONS             \n";
-        cout << "                      ═══════════════════════════════════════════\n\033[0m";
-        cout << "                        \033[1;36m►\033[0m \033[1m[1]\033[0m Push File to Server\n";
-        cout << "                        \033[1;36m►\033[0m \033[1m[2]\033[0m Pull File from Server\n";
-        cout << "                        \033[1;36m►\033[0m \033[1m[3]\033[0m Exit Program\n";
-        cout << "                      \033[1;35m";
-        cout << "═══════════════════════════════════════════\n\033[0m";
+        // cout << "                      ═══════════════════════════════════════════\n;
+        cout << "                        ► Push File to Server\n";
+        cout << "                        ► Pull File from Server\n";
+        cout << "                        ► Exit Program\n";
+        // cout << "                      \033[1;35m";
+        // cout << "═══════════════════════════════════════════\n\033[0m";
         cout << "                      Enter choice ➔ ";
         cin >> choice;
+        // cout << "\033[1;35m"; // Bright Magenta/Purple
+        // cout << "                      ═══════════════════════════════════════════\n";
+        // cout << "                                     CORE OPERATIONS             \n";
+        // cout << "                      ═══════════════════════════════════════════\n\033[0m";
+        // cout << "                        \033[1;36m►\033[0m \033[1m[1]\033[0m Push File to Server\n";
+        // cout << "                        \033[1;36m►\033[0m \033[1m[2]\033[0m Pull File from Server\n";
+        // cout << "                        \033[1;36m►\033[0m \033[1m[3]\033[0m Exit Program\n";
+        // cout << "                      \033[1;35m";
+        // cout << "═══════════════════════════════════════════\n\033[0m";
+        // cout << "                      Enter choice ➔ ";
+        // cin >> choice;
 
         if(choice == 1){
             string filepath;
@@ -540,7 +554,8 @@ int main()
                     cout << " > File is decompressed and decrypted" << endl;
 
                     // Rolled back to original hardcoded path
-                    sys.writeStringtoFile(data_decompressed, "C:\\Users\\Rescue\\Downloads\\" + filename + ".txt");
+                    // sys.writeStringtoFile(data_decompressed, "C:\\Users\\Rescue\\Downloads\\" + filename + ".txt");
+                    sys.writeStringtoFile(data_decompressed, "/home/noxyrial/Downloads/" + filename + ".txt");
                 }
             }
         }
