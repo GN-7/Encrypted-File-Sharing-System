@@ -36,18 +36,18 @@ public:
             cout << " > File writing unsuccesful" << endl;
             return;
         }
-        
+
         for ( auto i : fd){
             file << i + "\n";
         }
     }
 
     string extractFileName(string fp)
-    { 
+    {
         stack<char> filename;
         string fn;
         // - 5 so that .txt doesn't come up in filename
-        for (int i = fp.size() - 5; i >= 0; i--) 
+        for (int i = fp.size() - 5; i >= 0; i--)
         {
             if (fp[i] == '/' || fp[i] == '\\' || '/')
             {
@@ -66,7 +66,7 @@ public:
     }
 
     string readFiletoString(string filepath)
-    { 
+    {
         ifstream file(filepath, std::ios::binary);
         if (file.is_open() != true)
         {
@@ -93,13 +93,13 @@ public:
         file.write(str.data(), str.size());
         cout << " > File writing successful" << endl;
     }
- 
+
     void merge(vector<string> &a, int low, int mid, int high){
         vector<string> temp;
         int left = low;
         int right = mid + 1;
 
-        while(left < mid + 1 && right <= high){    
+        while(left < mid + 1 && right <= high){
             if(a[left] <= a[right]){
                 temp.push_back(a[left]);
                 left++;
@@ -112,7 +112,7 @@ public:
 
         for (int i = low; i <= high; i++)
         {
-            a[i] = temp[i - low]; 
+            a[i] = temp[i - low];
         }
     }
 
@@ -129,7 +129,7 @@ public:
     bool BinarySearch(vector<string> &fn, string tn)
     {
         if (fn.empty()) return false;
-        
+
         int start = 0;
         int end = fn.size() - 1;
 
@@ -184,7 +184,7 @@ class Huffman
     string encryptionKey;
     string storedTree;
     vector<unsigned char> payload;
-    
+
     string xor_ed(const string &data, const string &key)
     {
         if (key.empty()) return data;
@@ -248,7 +248,7 @@ class Huffman
     }
 
     void storeTree(Node *node)
-    { 
+    {
         if (!node)
             return;
 
@@ -302,7 +302,7 @@ public:
     {
         encryptionKey = key;
     }
-    
+
     string compress(const string &text)
     {
         codes.clear();
@@ -364,7 +364,7 @@ public:
         storedTree = packagedData.substr(firstDelim + 1, secondDelim - firstDelim - 1);
         string encryptedData = packagedData.substr(secondDelim + 1);
 
-        // Decrypt 
+        // Decrypt
         string decryptedData = xor_ed(encryptedData, encryptionKey);
         payload.assign(decryptedData.begin(), decryptedData.end());
 
@@ -447,75 +447,94 @@ public:
     }
 };
 
+
+void printBanner() {
+    cout << R"(
+                ▗▄▄▖ ▗▄▄▄▖▗▄▄▄▖     ▗▄▖ ▗▄▄▖  ▗▄▄▖▗▖ ▗▖▗▄▄▄▖▗▖  ▗▖▗▄▄▄▖
+                ▐▌ ▐▌  █    █      ▐▌ ▐▌▐▌ ▐▌▐▌   ▐▌ ▐▌  █  ▐▌  ▐▌▐▌
+                ▐▛▀▚▖  █    █      ▐▛▀▜▌▐▛▀▚▖▐▌   ▐▛▀▜▌  █  ▐▌  ▐▌▐▛▀▀▘
+                ▐▙▄▞▘▗▄█▄▖  █      ▐▌ ▐▌▐▌ ▐▌▝▚▄▄▖▐▌ ▐▌▗▄█▄▖ ▝▚▞▘ ▐▙▄▄▖
+)" << endl;
+}
+
 int main()
 {
-    System sys; 
-    Huffman h ("4"); 
-    
+    System sys;
+    Huffman h ("4");
+
     // Ensure this folder exists on your drive
-    string network_path = "C:\\Nipun_Code\\"; 
-    
+    string network_path = "C:\\Nipun_Code\\";
+
     sys.getFileDirectory("directory.txt");
-    
+
     while(true){
         sys.fileDirectory.clear();
         sys.getFileDirectory(network_path + "directory.txt");
         int choice;
-        cout << "-------------------------------------------" << endl;
-        cout << "To upload files to the shared server, enter 1\n";
-        cout << "To download files from the shared server, enter 2\n";
-        cout << "To exit the program, enter 3\n";
-        cout << "Enter your choice: "; 
+        cout << "\033[2J\033[1;1H";
+        printBanner();
+        cout << "\033[1;35m"; // Bright Magenta/Purple
+        cout << "                      ═══════════════════════════════════════════\n";
+        cout << "                                     CORE OPERATIONS             \n";
+        cout << "                      ═══════════════════════════════════════════\n\033[0m";
+        cout << "                        \033[1;36m►\033[0m \033[1m[1]\033[0m Push File to Server\n";
+        cout << "                        \033[1;36m►\033[0m \033[1m[2]\033[0m Pull File from Server\n";
+        cout << "                        \033[1;36m►\033[0m \033[1m[3]\033[0m Exit Program\n";
+        cout << "                      \033[1;35m";
+        cout << "═══════════════════════════════════════════\n\033[0m";
+        cout << "                      Enter choice ➔ ";
         cin >> choice;
 
         if(choice == 1){
             string filepath;
-            cout << "-------------------------------------------" << endl;
-            cout << "Enter absolute filepath: " << endl; 
-            
+            // cout << "-------------------------------------------" << endl;
+            // cout << "Enter absolute filepath: " << endl;
+            cout << "\033[1;35m                     ═══════════════════════════════════════════\033[0m\n";
+             cout << "                     \033[1;36m►\033[0m Enter absolute filepath ➔ ";
+
             // Rolled back to original cin method
             cin >> filepath;
-            
+
             string inputFileName = sys.extractFileName(filepath);
-            
+
             if(sys.BinarySearch(sys.fileDirectory, inputFileName) == false){
-                
+
                 string ofp = network_path + inputFileName + ".txt";
                 string data = sys.readFiletoString(filepath);
-                
+
                 if (!data.empty()) {
                     sys.fileDirectory.push_back(inputFileName);
                     sys.mergeSort(sys.fileDirectory, 0, sys.fileDirectory.size() - 1);
                     string data_compressed = h.compress(data);
                     h.printSizes(data);
-                    
-                    sys.writeStringtoFile(data_compressed, ofp);  
-                    sys.pushFileDirectory(sys.fileDirectory, network_path + "directory.txt");            
+
+                    sys.writeStringtoFile(data_compressed, ofp);
+                    sys.pushFileDirectory(sys.fileDirectory, network_path + "directory.txt");
                 }
             }
-            else{ 
+            else{
                 cout << "File already exists" << endl;
             }
-        }   
+        }
         else if(choice == 2){
             string filename;
             cout << "-------------------------------------------" << endl;
-            cout << "Enter filename: " << endl; 
-            
+            cout << "Enter filename: " << endl;
+
             // Rolled back to original cin method
             cin >> filename;
-            
+
             if(!sys.BinarySearch(sys.fileDirectory, filename)){
                 cout << "File does not exist in server! Enter proper filename" << endl;
             }
             else{
                 string shared_file_path = network_path + filename + ".txt";
                 string data_ = sys.readFiletoString(shared_file_path);
-                
+
                 if (!data_.empty()) {
                     string data_decompressed = h.decompress(data_);
                     cout << " > File is decompressed and decrypted" << endl;
-                    
+
                     // Rolled back to original hardcoded path
                     sys.writeStringtoFile(data_decompressed, "C:\\Users\\Rescue\\Downloads\\" + filename + ".txt");
                 }
@@ -525,7 +544,7 @@ int main()
             sys.pushFileDirectory(sys.fileDirectory, network_path + "directory.txt");
             break;
         }
-    };    
-    
+    };
+
     return 0;
 }
