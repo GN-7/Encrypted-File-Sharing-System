@@ -7,6 +7,7 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
+#include <windows.h>
 using namespace std;
 
 class System
@@ -49,7 +50,7 @@ public:
         // - 5 so that .txt doesn't come up in filename
         for (int i = fp.size() - 5; i >= 0; i--)
         {
-            if (fp[i] == '/' || fp[i] == '\\' || '/')
+            if (fp[i] == '/' || fp[i] == '\\')
             {
                 break;
             }
@@ -459,11 +460,14 @@ void printBanner() {
 
 int main()
 {
+    SetConsoleOutputCP(CP_UTF8);
     System sys;
     Huffman h ("4");
 
     // Ensure this folder exists on your drive
-    string network_path = "C:\\Nipun_Code\\";
+    string network_path_w = "C:\\Nipun_Code\\";
+    string network_path_l = "home/"; //----------> FILL
+    string network_path = network_path_w;
 
     sys.getFileDirectory("directory.txt");
 
