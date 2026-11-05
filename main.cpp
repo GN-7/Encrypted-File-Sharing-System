@@ -7,7 +7,7 @@
 #include <vector>
 #include <stack>
 #include <unordered_map>
-// #include <windows.h>
+
 using namespace std;
 
 class System
@@ -19,7 +19,7 @@ public:
         ifstream file(fp);
         if (file.is_open() != true)
         {
-            cout << " > File reading unsuccesful!" << endl;
+            cout << "                     > File reading unsuccesful!" << endl;
             return;
         }
         std::string line;
@@ -34,7 +34,7 @@ public:
 
         if (!file.is_open())
         {
-            cout << " > File writing unsuccesful" << endl;
+            cout << "                     > File writing unsuccesful" << endl;
             return;
         }
 
@@ -47,7 +47,7 @@ public:
     {
         stack<char> filename;
         string fn;
-        // - 5 so that .txt doesn't come up in filename
+
         for (int i = fp.size() - 5; i >= 0; i--)
         {
             if (fp[i] == '/' || fp[i] == '\\')
@@ -71,7 +71,7 @@ public:
         ifstream file(filepath, std::ios::binary);
         if (file.is_open() != true)
         {
-            cout << " > File reading unsuccesful!" << endl;
+            cout << "                     > File reading unsuccesful" << endl;
             return "";
         }
 
@@ -79,7 +79,7 @@ public:
         buffer << file.rdbuf();
         string fileContents = buffer.str();
 
-        cout << " > File reading successful!" << endl;
+        cout << "                     > File reading successful" << endl;
         return fileContents;
     }
 
@@ -87,12 +87,12 @@ public:
         ofstream file(fp, std::ios::binary);
         if (!file.is_open())
         {
-            cout << " \033[31m> File writing unsuccesful to: " << fp << endl;
+            cout << "                     > File writing unsuccesful" << fp << endl;
             return;
         }
 
         file.write(str.data(), str.size());
-        cout << " \033[32m> File writing successful" << endl;
+        cout << "                     > File writing successful" << endl;
     }
 
     void merge(vector<string> &a, int low, int mid, int high){
@@ -481,21 +481,18 @@ int main()
         sys.fileDirectory.clear();
         sys.getFileDirectory(network_path + "directory.txt");
         int choice;
-        cout << "\033[2J\033[1;1H";
 
-        cout << "\033[1;35m"; // Bright Magenta/Purple
         cout << "                                     CORE OPERATIONS             \n";
+        cout << "                           -----------------------------------             \n";
         cout << "                        -> Push File to Server\n";
         cout << "                        -> Pull File from Server\n";
-        cout << "                        -> Exit Program\n";
-        cout << "                      Enter choice -> ";
+        cout << "                        -> Exit Program\n\n";
+        cout << "                           Enter choice -> ";
         cin >> choice;
 
         if(choice == 1){
             string filepath;
-             cout << "                     \033[0m Enter absolute filepath -> ";
-
-            // Rolled back to original cin method
+            cout << "                     Enter absolute filepath -> ";
             cin >> filepath;
 
             string inputFileName = sys.extractFileName(filepath);
@@ -521,13 +518,11 @@ int main()
         }
         else if(choice == 2){
             string filename;
-            cout << "                     \033[1;36m►\033[0m Enter filename -> ";
-
-            // Rolled back to original cin method
+            cout << "                     Enter filename -> ";
             cin >> filename;
 
             if(!sys.BinarySearch(sys.fileDirectory, filename)){
-                cout << "File does not exist in server! Enter proper filename" << endl;
+                cout << "                     > File does not exist in server! Enter proper filename" << endl;
             }
             else{
                 string shared_file_path = network_path + filename + ".txt";
@@ -535,10 +530,7 @@ int main()
 
                 if (!data_.empty()) {
                     string data_decompressed = h.decompress(data_);
-                    cout << " > File is decompressed and decrypted" << endl;
-
-                    // Rolled back to original hardcoded path
-                    // sys.writeStringtoFile(data_decompressed, "C:\\Users\\Rescue\\Downloads\\" + filename + ".txt");
+                    cout << "                     > File is decrypted and decompressed";
                     sys.writeStringtoFile(data_decompressed, "/home/noxyrial/Downloads/" + filename + ".txt");
                 }
             }
