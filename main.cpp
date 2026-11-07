@@ -165,7 +165,8 @@ public:
     {
         ch = c;
         freq = f;
-        left = right = nullptr;
+        left = NULL;
+        right = NULL;
     }
 };
 
@@ -236,8 +237,7 @@ class Huffman
             Node *right = pq.top();
             pq.pop();
 
-            Node *parent = new Node(
-                '\0', left->freq + right->freq);
+            Node *parent = new Node('\0', left->freq + right->freq);
 
             parent->left = left;
             parent->right = right;
@@ -484,9 +484,9 @@ int main()
 
         cout << "                                     CORE OPERATIONS             \n";
         cout << "                           -----------------------------------             \n";
-        cout << "                        -> Push File to Server\n";
-        cout << "                        -> Pull File from Server\n";
-        cout << "                        -> Exit Program\n\n";
+        cout << "                        -> Push File to Server (Enter 1)\n";
+        cout << "                        -> Pull File from Server (Enter 2)\n";
+        cout << "                        -> Exit Program (Enter 3)\n\n";
         cout << "                           Enter choice -> ";
         cin >> choice;
 
