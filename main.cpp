@@ -474,7 +474,7 @@ int main()
     Huffman h ("4");
 
     // Ensure this folder exists on your drive
-    string network_path_w = "C:\\\\ASUS-TUF\\Shared_Directory";
+    string network_path_w = "C:\\\\ASUS-TUF\\Shared_Directory\\";
     string network_path = network_path_w;
 
     while(true){
