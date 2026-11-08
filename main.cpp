@@ -474,13 +474,11 @@ int main()
     Huffman h ("4");
 
     // Ensure this folder exists on your drive
-    string network_path_w = "C:\\Nipun_Code\\";
+    string network_path_w = "C:\\\\ASUS-TUF\\Shared_Directory";
     string network_path = network_path_w;
 
-    sys.getFileDirectory("directory.txt");
-    printBanner();
-
     while(true){
+        printBanner();
         sys.fileDirectory.clear();
         sys.getFileDirectory(network_path + "directory.txt");
         int choice;
@@ -534,7 +532,7 @@ int main()
                 if (!data_.empty()) {
                     string data_decompressed = h.decompress(data_);
                     cout << "                     > File is decrypted and decompressed";
-                    sys.writeStringtoFile(data_decompressed, "/home/noxyrial/Downloads/" + filename + ".txt");
+                    sys.writeStringtoFile(data_decompressed, "C:\\Users\\WELCOME\\Downloads\\" + filename + ".txt");
                 }
             }
         }
