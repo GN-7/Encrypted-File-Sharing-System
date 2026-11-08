@@ -227,7 +227,7 @@ class Huffman
             pq.push(new Node(p.first, p.second));
 
         if (pq.empty())
-            return nullptr;
+            return NULL;
 
         while (pq.size() > 1)
         {
@@ -269,21 +269,21 @@ class Huffman
     Node *rebuildTree(int &pos)
     {
         if (pos >= (int)storedTree.size())
-            return nullptr;
+            return NULL;
 
         char marker = storedTree[pos++];
 
         if (marker == '1')
         {
             if (pos >= (int)storedTree.size())
-                return nullptr;
+                return NULL;
 
             char ch = storedTree[pos++];
             return new Node(ch, 0);
         }
 
         if (marker != '0')
-            return nullptr;
+            return NULL;
 
         Node *node = new Node('\0', 0);
 
@@ -291,13 +291,16 @@ class Huffman
         node->right = rebuildTree(pos);
 
         if (!node->left || !node->right)
-            return nullptr;
+            return NULL;
 
         return node;
     }
 
 public:
-    Huffman(string key) : root(nullptr), encryptionKey(key) {}
+    Huffman(string key){
+        root = NULL;
+        encryptionKey = key;
+    }
 
     void setKey(string key)
     {
