@@ -478,6 +478,7 @@ int main()
     string network_path = network_path_w;
 
     while(true){
+        system("cls");
         printBanner();
         sys.fileDirectory.clear();
         sys.getFileDirectory(network_path + "directory.txt");
